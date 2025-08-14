@@ -13,6 +13,7 @@ function UserTable({ users }: UserTableProps) {
   } | null>(null);
   const [filteredUsers, setFilteredUsers] = useState<User[]>(users);
   const filterTimeoutRef = useRef<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const filterDelay = 500;
 
   useEffect(() => {
@@ -50,8 +51,16 @@ function UserTable({ users }: UserTableProps) {
     [filterUsersByName]
   );
 
+  useEffect(() => {
+    debouncedFilter(searchTerm);
+  }, [searchTerm, debouncedFilter]);
+
   const handleNameFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    debouncedFilter(e.target.value);
+    setSearchTerm(e.target.value);
+  };
+
+  const handleClearFilter = () => {
+    setSearchTerm("");
   };
 
   const handleImageHover = (
@@ -79,13 +88,20 @@ function UserTable({ users }: UserTableProps) {
     <div className="min-h-screen bg-gray-900">
       <div className="container mx-auto px-4 py-8 flex flex-col items-center">
         <div className="mb-6 w-full max-w-md mx-auto">
-          <div className="relative">
+          <div className="relative flex items-center">
             <input
               type="text"
               placeholder="Filter by name..."
+              value={searchTerm}
               onChange={handleNameFilterChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400"
+              className="w-full pl-4 pr-20 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 border-gray-600 text-white placeholder-gray-400 border"
             />
+            <button
+              onClick={handleClearFilter}
+              className="absolute right-12 px-3 py-1 bg-gray-700 text-gray-300 rounded hover:bg-gray-600 hover:text-white transition-colors"
+            >
+              Clear
+            </button>
           </div>
         </div>
       </div>
