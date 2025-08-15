@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useDebounce } from "../hooks/useDebounce";
 import type { User } from "../types/types";
 
 type UserTableProps = {
@@ -12,48 +13,27 @@ function UserTable({ users }: UserTableProps) {
     y: number;
   } | null>(null);
   const [filteredUsers, setFilteredUsers] = useState<User[]>(users);
-  const filterTimeoutRef = useRef<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const filterDelay = 500;
+  const filterDelay = 300;
+
+  const debouncedFilter = useDebounce((name: string) => {
+    const lowerCaseName = name.toLowerCase();
+    const filtered = users.filter((user) =>
+      `${user.name.first} ${user.name.last}`
+        .toLowerCase()
+        .includes(lowerCaseName)
+    );
+
+    setFilteredUsers(filtered);
+  }, filterDelay);
 
   useEffect(() => {
-    setFilteredUsers(users);
-  }, [users]);
-
-  const filterUsersByName = useCallback(
-    (name: string) => {
-      if (!name) {
-        setFilteredUsers(users);
-        return;
-      }
-
-      const lowerCaseName = name.toLowerCase();
-      const filtered = users.filter((user) =>
-        `${user.name.first} ${user.name.last}`
-          .toLowerCase()
-          .includes(lowerCaseName)
-      );
-
-      setFilteredUsers(filtered);
-    },
-    [users]
-  );
-
-  const debouncedFilter = useCallback(
-    (value: string) => {
-      if (filterTimeoutRef.current) {
-        clearTimeout(filterTimeoutRef.current);
-      }
-      filterTimeoutRef.current = setTimeout(() => {
-        filterUsersByName(value);
-      }, filterDelay);
-    },
-    [filterUsersByName]
-  );
-
-  useEffect(() => {
-    debouncedFilter(searchTerm);
-  }, [searchTerm, debouncedFilter]);
+    if (searchTerm) {
+      debouncedFilter(searchTerm);
+    } else {
+      setFilteredUsers(users);
+    }
+  }, [searchTerm, users, debouncedFilter]);
 
   const handleNameFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
