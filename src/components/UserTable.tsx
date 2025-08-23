@@ -6,6 +6,12 @@ type UserTableProps = {
   users: User[];
 };
 
+function formatDate(isoString: string) {
+  let date = new Date(isoString);
+
+  return date.toLocaleDateString("ru-RU");
+}
+
 function UserTable({ users }: UserTableProps) {
   const [hoveredImage, setHoveredImage] = useState<{
     url: string;
@@ -17,7 +23,7 @@ function UserTable({ users }: UserTableProps) {
   const filterDelay = 300;
 
   const debouncedFilter = useDebounce((name: string) => {
-    const lowerCaseName = name.toLowerCase();
+    const lowerCaseName = name.trim().toLowerCase();
     const filtered = users.filter((user) =>
       `${user.name.first} ${user.name.last}`
         .toLowerCase()
@@ -29,6 +35,7 @@ function UserTable({ users }: UserTableProps) {
 
   useEffect(() => {
     if (searchTerm) {
+      console.log("debounced value", searchTerm);
       debouncedFilter(searchTerm);
     } else {
       setFilteredUsers(users);
@@ -58,12 +65,6 @@ function UserTable({ users }: UserTableProps) {
     setHoveredImage(null);
   };
 
-  const formatDate = (isoString: string) => {
-    let date = new Date(isoString);
-
-    return date.toLocaleDateString("ru-RU");
-  };
-
   return (
     <div className="min-h-screen bg-gray-900">
       <div className="container mx-auto px-4 py-8 flex flex-col items-center">
@@ -74,11 +75,11 @@ function UserTable({ users }: UserTableProps) {
               placeholder="Filter by name..."
               value={searchTerm}
               onChange={handleNameFilterChange}
-              className="w-full pl-4 pr-20 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 border-gray-600 text-white placeholder-gray-400 border"
+              className="px-4 w-full py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 border-gray-600 text-white placeholder-gray-400 border"
             />
             <button
               onClick={handleClearFilter}
-              className="absolute right-12 px-3 py-1 bg-gray-700 text-gray-300 rounded hover:bg-gray-600 hover:text-white transition-colors"
+              className="right-12 ml-4 px-3 py-2 bg-gray-700 text-gray-300 rounded hover:bg-gray-600 hover:text-white transition-colors"
             >
               Clear
             </button>
@@ -112,8 +113,8 @@ function UserTable({ users }: UserTableProps) {
           </thead>
           <tbody className="bg-gray-800 divide-y divide-gray-700">
             {filteredUsers.length > 0 ? (
-              filteredUsers.map((user, index) => (
-                <tr key={index} className="hover:bg-gray-700">
+              filteredUsers.map((user) => (
+                <tr key={user.login.uuid} className="hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-white">
                       {`${user.name.first} ${user.name.last}`}
