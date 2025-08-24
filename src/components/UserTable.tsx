@@ -13,11 +13,6 @@ function formatDate(isoString: string) {
 }
 
 function UserTable({ users }: UserTableProps) {
-  const [hoveredImage, setHoveredImage] = useState<{
-    url: string;
-    x: number;
-    y: number;
-  } | null>(null);
   const [filteredUsers, setFilteredUsers] = useState<User[]>(users);
   const [searchTerm, setSearchTerm] = useState("");
   const filterDelay = 300;
@@ -48,21 +43,6 @@ function UserTable({ users }: UserTableProps) {
 
   const handleClearFilter = () => {
     setSearchTerm("");
-  };
-
-  const handleImageHover = (
-    e: React.MouseEvent<HTMLImageElement>,
-    url: string
-  ) => {
-    setHoveredImage({
-      url,
-      x: e.clientX,
-      y: e.clientY,
-    });
-  };
-
-  const handleImageLeave = () => {
-    setHoveredImage(null);
   };
 
   return (
@@ -121,19 +101,17 @@ function UserTable({ users }: UserTableProps) {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <img
-                      src={user.picture.thumbnail}
-                      alt={`${user.name.first} ${user.name.last}`}
-                      onMouseEnter={(e) =>
-                        handleImageHover(e, user.picture.large)
-                      }
-                      onMouseLeave={handleImageLeave}
-                      onMouseMove={(e) =>
-                        setHoveredImage((prev) =>
-                          prev ? { ...prev, x: e.clientX, y: e.clientY } : null
-                        )
-                      }
-                    />
+                    <div className="relative group flex items-center">
+                      <img
+                        src={user.picture.thumbnail}
+                        alt={`${user.name.first} ${user.name.last}`}
+                      />
+                      <img
+                        src={user.picture.large}
+                        alt={`${user.name.first} ${user.name.last}`}
+                        className="opacity-0 group-hover:opacity-100 inset-x-0 top-0 left-15 absolute transition-opacity duration-300"
+                      />
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-400">
@@ -164,22 +142,6 @@ function UserTable({ users }: UserTableProps) {
           </tbody>
         </table>
       </div>
-
-      {hoveredImage && (
-        <div
-          className="fixed z-50 p-1 bg-gray-800 rounded-lg shadow-xl border border-gray-600"
-          style={{
-            left: `${hoveredImage.x + 10}px`,
-            top: `${hoveredImage.y + 10}px`,
-          }}
-        >
-          <img
-            src={hoveredImage.url}
-            alt="Enlarged user"
-            className="w-32 h-32 object-cover rounded-md"
-          />
-        </div>
-      )}
     </div>
   );
 }
