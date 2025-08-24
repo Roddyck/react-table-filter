@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDebounce } from "../hooks/useDebounce";
 import type { User } from "../types/types";
 
@@ -17,7 +17,7 @@ function UserTable({ users }: UserTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const filterDelay = 300;
 
-  const debouncedFilter = useDebounce((name: string) => {
+  const performFilter = (name: string) => {
     const lowerCaseName = name.trim().toLowerCase();
     const filtered = users.filter((user) =>
       `${user.name.first} ${user.name.last}`
@@ -26,23 +26,20 @@ function UserTable({ users }: UserTableProps) {
     );
 
     setFilteredUsers(filtered);
-  }, filterDelay);
+  };
 
-  useEffect(() => {
-    if (searchTerm) {
-      console.log("debounced value", searchTerm);
-      debouncedFilter(searchTerm);
-    } else {
-      setFilteredUsers(users);
-    }
-  }, [searchTerm, users, debouncedFilter]);
+  const debouncedFilter = useDebounce(performFilter, filterDelay);
 
   const handleNameFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
+    e.preventDefault();
+    const value = e.target.value;
+    setSearchTerm(value);
+    debouncedFilter(value);
   };
 
   const handleClearFilter = () => {
     setSearchTerm("");
+    setFilteredUsers(users);
   };
 
   return (
